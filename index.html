@@ -4,10 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ROTI - Radio on the Internet</title>
-  <!-- Import Poppins font from Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <style>
-    /* Global styles with Poppins font */
     body {
       margin: 0;
       padding: 0;
@@ -18,7 +16,6 @@
       align-items: center;
       height: 100vh;
     }
-    /* White rounded container centered on the page */
     .container {
       background-color: white;
       border-radius: 15px;
@@ -28,18 +25,14 @@
       max-width: 400px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
-    /* Heading uses Poppins Semibold (weight 600) */
     h1 {
       margin-bottom: 20px;
-      font-family: "Poppins", sans-serif;
       font-weight: 600;
     }
-    /* Frequency display */
     #frequency-section p {
       font-size: 1.2em;
       margin: 10px 0;
     }
-    /* Join section styling */
     #join-section {
       margin: 20px 0;
       display: flex;
@@ -54,7 +47,6 @@
       border-radius: 5px;
       margin-right: 10px;
     }
-    /* Move the blue Connect button down slightly */
     #join-section button {
       padding: 10px 20px;
       font-size: 1em;
@@ -65,7 +57,6 @@
       cursor: pointer;
       margin-top: 5px;
     }
-    /* Connection status indicator */
     #status {
       margin: 15px 0;
       display: flex;
@@ -85,7 +76,6 @@
     .connected {
       background-color: green;
     }
-    /* Mute/Unmute button styling */
     #mute-btn {
       padding: 10px 20px;
       font-size: 1em;
@@ -104,39 +94,32 @@
 <body>
   <div class="container">
     <h1>ROTI: Radio on the Internet</h1>
-    <!-- Display your generated frequency -->
     <div id="frequency-section">
       <p>Your Frequency: <span id="my-frequency"></span></p>
     </div>
-    <!-- Field to join another session -->
     <div id="join-section">
       <input type="text" id="join-frequency" placeholder="Enter frequency to join (e.g., 4729)" maxlength="4" />
       <button id="join-btn">Connect</button>
     </div>
-    <!-- Connection status indicator -->
     <div id="status">
       <span id="connection-indicator" class="disconnected"></span>
       <span id="status-text">Not Connected</span>
     </div>
-    <!-- Mute/Unmute button -->
     <button id="mute-btn" title="Toggle Mute">Mute</button>
   </div>
 
   <script>
-    // Utility: generate a random 4-digit code (with leading zeros)
     function generateFrequency() {
       return String(Math.floor(Math.random() * 10000)).padStart(4, "0");
     }
-    // Utility: generate a simple random client ID
     function generateClientId() {
       return "client-" + Math.random().toString(36).substr(2, 9);
     }
     const myFrequency = generateFrequency();
     const myId = generateClientId();
-    let sessionCode = myFrequency; // default session: hosting with your own frequency
-    let isHost = true; // if true, you're hosting; if false, you're joining another session
+    let sessionCode = myFrequency;
+    let isHost = true;
 
-    // Display your generated frequency on the page
     document.getElementById("my-frequency").textContent = myFrequency;
     const joinBtn = document.getElementById("join-btn");
     const joinInput = document.getElementById("join-frequency");
@@ -145,27 +128,14 @@
     const muteBtn = document.getElementById("mute-btn");
 
     let localStream = null;
-    let peers = {}; // Store RTCPeerConnections, keyed by peer id
+    let peers = {};
 
-    // Updated ICE configuration with forced relay for testing
     const configuration = {
-  iceServers: [
-    { urls: "stun:stun1.l.google.com:19302" }, // Reliable Google STUN
-    { urls: "stun:stun2.l.google.com:19302" }, // Backup Google STUN
-    {
-      urls: "turn:openrelay.metered.ca:80", // Keep as fallback
-      username: "openrelayproject",
-      credential: "openrelayproject"
-    },
-    {
-      urls: "turn:openrelay.metered.ca:443", // HTTPS port, no TCP forced
-      username: "openrelayproject",
-      credential: "openrelayproject"
-    }
-  ]
-};
+      iceServers: [
+        { urls: "stun:stun.l.google.com:19302" }
+      ]
+    };
 
-    // Connect to the signaling server (update URL upon deployment)
     const socket = new WebSocket("wss://roti-live.glitch.me/");
 
     socket.onopen = () => {
@@ -180,6 +150,7 @@
           handlePeerJoined(msg.id);
           break;
         case "signal":
+          console.log("Received signal from", msg.from, ":", msg.data);
           handleSignal(msg.from, msg.data);
           break;
         case "peer-disconnected":
@@ -192,10 +163,9 @@
     };
 
     socket.onerror = (err) => {
-      console.error("Socket error: ", err);
+      console.error("Socket error:", err);
     };
 
-    // Register session on the signaling server based on mode
     function registerSession() {
       if (joinInput.value && joinInput.value.length === 4) {
         sessionCode = joinInput.value;
@@ -216,7 +186,6 @@
       }
     }
 
-    // When the join button is clicked, use the input frequency to join a session.
     joinBtn.addEventListener("click", () => {
       const code = joinInput.value;
       if (code.length !== 4) {
@@ -228,19 +197,17 @@
       registerSession();
     });
 
-    // Access local audio (audio-only)
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then(stream => {
         localStream = stream;
       })
       .catch(err => {
-        console.error("Error accessing audio: ", err);
+        console.error("Error accessing audio:", err);
         alert("Could not access microphone.");
       });
 
-    // When another peer joins, create a connection and initiate signaling.
     function handlePeerJoined(peerId) {
-      console.log("Peer joined: ", peerId);
+      console.log("Peer joined:", peerId);
       const peerConnection = createPeerConnection(peerId);
       peers[peerId] = peerConnection;
       if (localStream) {
@@ -259,47 +226,59 @@
             data: { type: "offer", sdp: peers[peerId].localDescription }
           }));
         })
-        .catch(err => console.error("Error creating offer: ", err));
+        .catch(err => console.error("Error creating offer:", err));
       updateConnectionStatus();
     }
 
-    // Create a new RTCPeerConnection and set up its event handlers.
     function createPeerConnection(peerId) {
-  const pc = new RTCPeerConnection(configuration);
-  pc.onicecandidate = (event) => {
-    if (event.candidate) {
-      console.log("Sending ICE candidate to", peerId, ":", event.candidate.candidate);
-      socket.send(JSON.stringify({
-        action: "signal",
-        session: sessionCode,
-        id: myId,
-        target: peerId,
-        data: { type: "candidate", candidate: event.candidate }
-      }));
+      const pc = new RTCPeerConnection(configuration);
+      pc.onicecandidate = (event) => {
+        if (event.candidate) {
+          console.log("Sending ICE candidate to", peerId, ":", event.candidate.candidate);
+          socket.send(JSON.stringify({
+            action: "signal",
+            session: sessionCode,
+            id: myId,
+            target: peerId,
+            data: { type: "candidate", candidate: event.candidate }
+          }));
+        } else {
+          console.log("ICE candidate gathering complete for", peerId);
+        }
+      };
+      pc.onicecandidateerror = (event) => {
+        console.error("ICE Candidate Error:", {
+          errorCode: event.errorCode,
+          errorText: event.errorText,
+          url: event.url,
+          hostCandidate: event.hostCandidate
+        });
+      };
+      pc.ontrack = (event) => {
+        console.log("Received remote track from:", peerId);
+        let remoteAudio = document.getElementById("audio-" + peerId);
+        if (!remoteAudio) {
+          remoteAudio = document.createElement("audio");
+          remoteAudio.id = "audio-" + peerId;
+          remoteAudio.autoplay = true;
+          document.body.appendChild(remoteAudio);
+        }
+        remoteAudio.srcObject = event.streams[0];
+      };
+      pc.onconnectionstatechange = () => {
+        console.log("Connection state for", peerId, ":", pc.connectionState);
+      };
+      pc.onicegatheringstatechange = () => {
+        console.log("ICE gathering state for", peerId, ":", pc.iceGatheringState);
+      };
+      pc.oniceconnectionstatechange = () => {
+        console.log("ICE connection state for", peerId, ":", pc.iceConnectionState);
+      };
+      return pc;
     }
-  };
-  pc.onicecandidateerror = (event) => {
-    console.error("ICE Candidate Error:", event.errorCode, event.errorText, event.url);
-  };
-  pc.ontrack = (event) => {
-    console.log("Received remote track from:", peerId);
-    let remoteAudio = document.getElementById("audio-" + peerId);
-    if (!remoteAudio) {
-      remoteAudio = document.createElement("audio");
-      remoteAudio.id = "audio-" + peerId;
-      remoteAudio.autoplay = true;
-      document.body.appendChild(remoteAudio);
-    }
-    remoteAudio.srcObject = event.streams[0];
-  };
-  pc.onconnectionstatechange = () => {
-    console.log("Connection state for", peerId, ":", pc.connectionState);
-  };
-  return pc;
-}
 
-    // Handle incoming signaling messages for offers, answers, and ICE candidates.
     function handleSignal(from, data) {
+      console.log("Received signal from", from, ":", data);
       let pc = peers[from];
       if (!pc) {
         pc = createPeerConnection(from);
@@ -311,7 +290,7 @@
         }
       }
       if (data.type === "offer") {
-        pc.setRemoteDescription(new RTCSessionDescription(data.sdp))
+        pc.setRemoteDescription(new RTCSessionDescription(data.sdpi))
           .then(() => pc.createAnswer())
           .then(answer => pc.setLocalDescription(answer))
           .then(() => {
@@ -323,20 +302,19 @@
               data: { type: "answer", sdp: pc.localDescription }
             }));
           })
-          .catch(err => console.error("Error handling offer: ", err));
+          .catch(err => console.error("Error handling offer:", err));
       } else if (data.type === "answer") {
         pc.setRemoteDescription(new RTCSessionDescription(data.sdp))
-          .catch(err => console.error("Error setting remote description: ", err));
+          .catch(err => console.error("Error setting remote description:", err));
       } else if (data.type === "candidate") {
         pc.addIceCandidate(new RTCIceCandidate(data.candidate))
-          .catch(err => console.error("Error adding ICE candidate: ", err));
+          .catch(err => console.error("Error adding ICE candidate:", err));
       }
       updateConnectionStatus();
     }
 
-    // When a peer disconnects, close and remove the connection.
     function handlePeerDisconnected(peerId) {
-      console.log("Peer disconnected: ", peerId);
+      console.log("Peer disconnected:", peerId);
       if (peers[peerId]) {
         peers[peerId].close();
         delete peers[peerId];
@@ -348,7 +326,6 @@
       updateConnectionStatus();
     }
 
-    // Mute/Unmute button: toggle the local audio track on/off and update button text.
     let isMuted = false;
     muteBtn.addEventListener("click", () => {
       if (!localStream) return;
@@ -365,7 +342,6 @@
       }
     });
 
-    // Update the visual connection status indicator.
     function updateConnectionStatus() {
       const connectedPeers = Object.keys(peers).length;
       if (connectedPeers > 0) {
