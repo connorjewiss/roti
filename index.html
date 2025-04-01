@@ -149,21 +149,21 @@
 
     // Updated ICE configuration with forced relay for testing
     const configuration = {
-      iceServers: [
-        { urls: "stun:stun.l.google.com:19302" },
-        {
-          urls: "turn:openrelay.metered.ca:80",
-          username: "openrelayproject",
-          credential: "openrelayproject"
-        },
-        {
-          urls: "turn:openrelay.metered.ca:443?transport=tcp",
-          username: "openrelayproject",
-          credential: "openrelayproject"
-        }
-      ],
-      iceTransportPolicy: "relay"
-    };
+  iceServers: [
+    { urls: "stun:stun.l.google.com:19302" },
+    {
+      urls: "turn:openrelay.metered.ca:80",
+      username: "openrelayproject",
+      credential: "openrelayproject"
+    },
+    {
+      urls: "turn:openrelay.metered.ca:443?transport=tcp",
+      username: "openrelayproject",
+      credential: "openrelayproject"
+    }
+  ]
+  // Remove iceTransportPolicy: "relay" to allow direct P2P when possible
+};
 
     // Connect to the signaling server (update URL upon deployment)
     const socket = new WebSocket("wss://roti-live.glitch.me/");
