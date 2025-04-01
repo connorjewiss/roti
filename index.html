@@ -134,7 +134,7 @@
     const myFrequency = generateFrequency();
     const myId = generateClientId();
     let sessionCode = myFrequency; // default session: hosting with your own frequency
-    let isHost = true; // if true, you’re hosting; if false, you’re joining another session
+    let isHost = true; // if true, you're hosting; if false, you're joining another session
 
     // Display your generated frequency on the page
     document.getElementById("my-frequency").textContent = myFrequency;
@@ -146,19 +146,21 @@
 
     let localStream = null;
     let peers = {}; // Store RTCPeerConnections, keyed by peer id
+
+    // Updated ICE configuration with alternative TURN server
     const configuration = {
       iceServers: [
-    { urls: "stun:stun.l.google.com:19302" },
-    {
-      urls: "turn:numb.viagenie.ca:3478",
-      username: "webrtc@live.com",
-      credential: "muazkh"
-    }
-  ]
-};
+        { urls: "stun:stun.l.google.com:19302" },
+        {
+          urls: "turn:openrelay.metered.ca:80",
+          username: "openrelayproject",
+          credential: "openrelayproject"
+        }
+      ]
+    };
 
     // Connect to the signaling server (update URL upon deployment)
-    const socket = new WebSocket("wss://roti-live.glitch.me");
+    const socket = new WebSocket("ws://localhost:3000");
 
     socket.onopen = () => {
       console.log("Connected to signaling server");
@@ -260,6 +262,7 @@
       const pc = new RTCPeerConnection(configuration);
       pc.onicecandidate = (event) => {
         if (event.candidate) {
+          console.log("ICE candidate from", peerId, ":", event.candidate.candidate);
           socket.send(JSON.stringify({
             action: "signal",
             session: sessionCode,
