@@ -149,7 +149,6 @@
 
     // Updated ICE configuration with both STUN and alternative TURN servers (UDP and TCP)
     const configuration = {
-      const configuration = {
   iceServers: [
     { urls: "stun:stun.l.google.com:19302" },
     {
@@ -163,7 +162,7 @@
       credential: "openrelayproject"
     }
   ],
-  iceTransportPolicy: "relay" // Force using TURN only for testing
+  iceTransportPolicy: "relay" // This forces TURN usage for testing
 };
 
     // Connect to the signaling server (update URL upon deployment)
