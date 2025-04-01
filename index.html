@@ -147,26 +147,26 @@
     let localStream = null;
     let peers = {}; // Store RTCPeerConnections, keyed by peer id
 
-    // Updated ICE configuration with both STUN and alternative TURN servers (UDP and TCP)
+    // Updated ICE configuration with forced relay for testing
     const configuration = {
-  iceServers: [
-    { urls: "stun:stun.l.google.com:19302" },
-    {
-      urls: "turn:openrelay.metered.ca:80",
-      username: "openrelayproject",
-      credential: "openrelayproject"
-    },
-    {
-      urls: "turn:openrelay.metered.ca:443?transport=tcp",
-      username: "openrelayproject",
-      credential: "openrelayproject"
-    }
-  ],
-  iceTransportPolicy: "relay" // This forces TURN usage for testing
-};
+      iceServers: [
+        { urls: "stun:stun.l.google.com:19302" },
+        {
+          urls: "turn:openrelay.metered.ca:80",
+          username: "openrelayproject",
+          credential: "openrelayproject"
+        },
+        {
+          urls: "turn:openrelay.metered.ca:443?transport=tcp",
+          username: "openrelayproject",
+          credential: "openrelayproject"
+        }
+      ],
+      iceTransportPolicy: "relay"
+    };
 
     // Connect to the signaling server (update URL upon deployment)
-    const socket = new WebSocket("wss://roti-live.glitch.me/");
+    const socket = new WebSocket("wss://https://roti-live.glitch.me/");
 
     socket.onopen = () => {
       console.log("Connected to signaling server");
@@ -277,6 +277,10 @@
             data: { type: "candidate", candidate: event.candidate }
           }));
         }
+      };
+      // Log ICE candidate errors for debugging
+      pc.onicecandidateerror = (event) => {
+        console.error("ICE Candidate Error:", event.errorCode, event.errorText);
       };
       pc.ontrack = (event) => {
         console.log("Received remote track from: ", peerId);
