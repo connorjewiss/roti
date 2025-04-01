@@ -147,8 +147,15 @@
     let localStream = null;
     let peers = {}; // Store RTCPeerConnections, keyed by peer id
     const configuration = {
-      iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
-    };
+      iceServers: [
+    { urls: "stun:stun.l.google.com:19302" },
+    {
+      urls: "turn:numb.viagenie.ca:3478",
+      username: "webrtc@live.com",
+      credential: "muazkh"
+    }
+  ]
+};
 
     // Connect to the signaling server (update URL upon deployment)
     const socket = new WebSocket("wss://roti-live.glitch.me");
