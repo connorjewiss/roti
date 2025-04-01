@@ -149,20 +149,11 @@
 
     // Updated ICE configuration using public TURN servers
     const configuration = {
-      iceServers: [
-        { urls: "stun:stun.l.google.com:19302" },
-        {
-          urls: "turn:openrelay.metered.ca:80",
-          username: "openrelayproject",
-          credential: "openrelayproject"
-        },
-        {
-          urls: "turn:openrelay.metered.ca:443?transport=tcp",
-          username: "openrelayproject",
-          credential: "openrelayproject"
-        }
-      ]
-    };
+  iceServers: [
+    { urls: "stun:73.42.19.87:3478" }, // Replace with your public IP
+    { urls: "turn:73.42.19.87:3478", username: "test", credential: "test" }
+  ]
+};
 
     // Connect to the signaling server (update URL upon deployment)
     const socket = new WebSocket("wss://roti-live.glitch.me/");
