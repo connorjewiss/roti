@@ -147,7 +147,7 @@
     let localStream = null;
     let peers = {}; // Store RTCPeerConnections, keyed by peer id
 
-    // Updated ICE configuration with alternative TURN server
+    // Updated ICE configuration with both STUN and alternative TURN servers (UDP and TCP)
     const configuration = {
       iceServers: [
         { urls: "stun:stun.l.google.com:19302" },
@@ -155,12 +155,17 @@
           urls: "turn:openrelay.metered.ca:80",
           username: "openrelayproject",
           credential: "openrelayproject"
+        },
+        {
+          urls: "turn:openrelay.metered.ca:443?transport=tcp",
+          username: "openrelayproject",
+          credential: "openrelayproject"
         }
       ]
     };
 
     // Connect to the signaling server (update URL upon deployment)
-    const socket = new WebSocket("ws://localhost:3000");
+    const socket = new WebSocket("wss://roti-live.glitch.me/");
 
     socket.onopen = () => {
       console.log("Connected to signaling server");
