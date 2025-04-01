@@ -150,19 +150,19 @@
     // Updated ICE configuration with forced relay for testing
     const configuration = {
   iceServers: [
-    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:stun1.l.google.com:19302" }, // Reliable Google STUN
+    { urls: "stun:stun2.l.google.com:19302" }, // Backup Google STUN
     {
-      urls: "turn:openrelay.metered.ca:80",
+      urls: "turn:openrelay.metered.ca:80", // Keep as fallback
       username: "openrelayproject",
       credential: "openrelayproject"
     },
     {
-      urls: "turn:openrelay.metered.ca:443?transport=tcp",
+      urls: "turn:openrelay.metered.ca:443", // HTTPS port, no TCP forced
       username: "openrelayproject",
       credential: "openrelayproject"
     }
   ]
-  // Remove iceTransportPolicy: "relay" to allow direct P2P when possible
 };
 
     // Connect to the signaling server (update URL upon deployment)
