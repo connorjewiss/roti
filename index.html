@@ -165,7 +165,7 @@
     };
 
     // Connect to the signaling server (update URL upon deployment)
-    const socket = new WebSocket("ws://localhost:3000");
+    const socket = new WebSocket("wss://roti-live.glitch.me/");
 
     socket.onopen = () => {
       console.log("Connected to signaling server");
